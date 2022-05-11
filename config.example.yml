@@ -1,0 +1,23 @@
+blockdaemon_api_key: your-api-key
+currencies: eur,usd
+coins:
+  nimiq-2:
+    enabled: true
+    display_name: Nimiq
+    wallets:
+      - NQxxxxxx
+  
+  solana:
+    enabled: true
+  
+  bitcoin:
+    enabled: true
+    wallets:
+      - zpub6qLmWvz88J4kQtyC276n22zsWsPLVgKey1q8mdMNcjKwmbAtBsEMxCK9RoKDXvdZLKq9hkfsp4MAYizeSpyYyKaYE438e3c7hPoMvcfbQkS
+  
+  tezos:
+    enabled: true
+  
+  ethereum:  
+     enabled: true  
+     

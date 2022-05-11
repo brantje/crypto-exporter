@@ -1,0 +1,5 @@
+prometheus_client==0.14.1
+pycoingecko==2.2.0
+pyparsing==3.0.7
+PyYAML==6.0
+requests==2.27.1
