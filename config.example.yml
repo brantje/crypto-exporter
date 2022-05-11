@@ -13,8 +13,7 @@ coins:
   bitcoin:
     enabled: true
     wallets:
-      - zpub6qLmWvz88J4kQtyC276n22zsWsPLVgKey1q8mdMNcjKwmbAtBsEMxCK9RoKDXvdZLKq9hkfsp4MAYizeSpyYyKaYE438e3c7hPoMvcfbQkS
-  
+      - bc1xxxxxxxxxxxx
   tezos:
     enabled: true
   
