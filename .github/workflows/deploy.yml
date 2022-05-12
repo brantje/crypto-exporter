@@ -1,4 +1,4 @@
-name: Demo Push
+name: Push
 
 on:   
   push:
