@@ -106,12 +106,14 @@ def get_wallet_info(coin, wallet):
 
 
 def coins_info(coins=[]):
-    coins_string = ','.join(map(str, coins.keys()))
+    enabled_coins =  { key:value for (key,value) in coins.items() if value.get('enabled')}
+    coins_string = ','.join(map(str, enabled_coins.keys()))
     print('Fetching info for', coins_string, 'from CoinGecko')
 
     reference_currency = CONFIG.get('currencies')
     price_data = cg.get_price(ids=coins_string, vs_currencies=reference_currency)    
-    for coin in coins.keys():
+    
+    for coin in enabled_coins.keys():
         coin_price = price_data.get(coin, None)
         
         if not coin_price:
