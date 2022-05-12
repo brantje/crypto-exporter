@@ -3,3 +3,4 @@ pycoingecko==2.2.0
 pyparsing==3.0.7
 PyYAML==6.0
 requests==2.27.1
+cryptotools @ git+https://github.com/mcdallas/cryptotools.git@dbdced863bd2622f4cb41595df1ecad399760d78
