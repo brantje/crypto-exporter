@@ -1,0 +1,10 @@
+# # config file version
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    orgId: 1
+    url: http://crypto-exporter-prometheus-1:9090
+    isDefault: true
+    version: 1
+    editable: false
