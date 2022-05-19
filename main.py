@@ -117,7 +117,7 @@ def coins_info(coins=[]):
         coin_price = price_data.get(coin, None)
         
         if not coin_price:
-            print(coin + ' not found')
+            print(coin + ' not found ')
         else:     
             c = CONFIG.get('coins', {}).get(coin, {})
             display_name = c.get('display_name', coin).capitalize()
