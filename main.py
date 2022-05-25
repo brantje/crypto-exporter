@@ -56,11 +56,13 @@ def request(url, additional_headers = {}, data = None):
             return data
     except HTTPError as e:
         # do something
-        logging.info(e.code)
-        logging.info('Error code: ', e.read().decode())
+        # logging.info(e.code)
+        # logging.info('Error code: ', e.read().decode())
+        return False
     except URLError as e:
         # do something
-        logging.info('Reason: ', e.reason)                
+        # logging.info('Reason: ', e.reason)                
+        return False
 
 def ubiquity_request(path, data = None, api_version='v2'):
     data = request('https://ubiquity.api.blockdaemon.com/'+api_version+'/'+ path, 
@@ -105,7 +107,7 @@ def get_wallet_info(coin, wallet):
             data = {}
             data['addresses'] = [wallet];
             data = ubiquity_request(coin + '/mainnet/accounts/', data, 'v1')
-            if len(data.get(wallet)) > 0:
+            if data and len(data.get(wallet, [])) > 0:
                 walletData = data.get(wallet)[0]
                 balance = walletData.get('confirmed_balance', walletData.get('balance', 0))
                 balance = int(balance) / 10**walletData.get('currency').get('decimals', 0)
