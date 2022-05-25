@@ -6,6 +6,8 @@ from prometheus_client import start_http_server, Gauge, REGISTRY, PROCESS_COLLEC
 from time import sleep
 import yaml
 from pycoingecko import CoinGeckoAPI
+# Import math Library
+import math
 
 
 from cryptotools import Xpub
@@ -50,6 +52,7 @@ def request(url, additional_headers = {}, data = None):
     except HTTPError as e:
         # do something
         print(e.code)
+        print(e.headers['Location'])
         print('Error code: ', e.read().decode())
     except URLError as e:
         # do something
@@ -97,9 +100,16 @@ def get_wallet_info(coin, wallet):
            #get_xpub_wallets(wallet)
            print('xpub not supported')
         else:
-            data = ubiquity_request(coin + '/mainnet/account/'+ wallet)
-            chain = next(iter(data))
-            balance = data.get(chain).get('balance', 0)
+            data = {}
+            data['addresses'] = [wallet];
+            data = ubiquity_request(coin + '/mainnet/accounts/', data, 'v1')
+            if len(data.get(wallet)) > 0:
+                walletData = data.get(wallet)[0]
+                balance = walletData.get('confirmed_balance', walletData.get('balance', 0))
+                balance = int(balance) / 10**walletData.get('currency').get('decimals', 0)
+            
+             
+            
 
     display_name = CONFIG.get('coins', {}).get(coin, {}).get('display_name', coin).capitalize()
     WALLET_BALANCE.labels(currency=display_name, wallet=wallet).set(balance)
