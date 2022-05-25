@@ -1,0 +1,20 @@
+services:
+  cryptoexporter:
+    build: .
+    volumes:
+      - ./config.yml:/usr/app/src/config.yml
+    links:
+      - prometheus
+  grafana:
+    image: grafana/grafana-enterprise
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./configs/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./configs/grafana.ini:/etc/grafana/grafana.ini
+    links:
+      - prometheus
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml 

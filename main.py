@@ -1,35 +1,40 @@
 import urllib.request
-from urllib.error import URLError, HTTPError
+import logging
+import yaml
 import json
+from urllib.error import URLError, HTTPError
 from os import getenv
 from prometheus_client import start_http_server, Gauge, REGISTRY, PROCESS_COLLECTOR, PLATFORM_COLLECTOR, GC_COLLECTOR 
 from time import sleep
-import yaml
 from pycoingecko import CoinGeckoAPI
-# Import math Library
-import math
-
-
 from cryptotools import Xpub
 
 [REGISTRY.unregister(c) for c in [PROCESS_COLLECTOR, PLATFORM_COLLECTOR, GC_COLLECTOR ]]
 
 
-with open("./config.yml", "r") as stream:
-    try:
-        CONFIG = yaml.safe_load(stream)
-    except yaml.YAMLError as exc:
-        print(exc)
-        exit(1)
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s — %(message)s',
+                    datefmt='%Y-%m-%d_%H:%M:%S',
+                    handlers=[logging.StreamHandler()])
+
+def loadConfig():
+    with open("./config.yml", "r") as stream:
+        try:
+            CONFIG = yaml.safe_load(stream)
+            return CONFIG
+        except yaml.YAMLError as exc:
+            logging.error(exc)
+            exit(1)
 
 
-print('Config loaded')
-
+CONFIG = loadConfig()
 cg = CoinGeckoAPI()
 
 WALLET_BALANCE = Gauge('crypto_wallet_balance','wallet_balance', ['currency','wallet'])
 
 EXCHANGE_RATE = Gauge('crypto_exchange_rate','Current exchange rates', ['currency', 'reference_currency'])
+
+
 
 def request(url, additional_headers = {}, data = None):
     if data:
@@ -51,12 +56,11 @@ def request(url, additional_headers = {}, data = None):
             return data
     except HTTPError as e:
         # do something
-        print(e.code)
-        print(e.headers['Location'])
-        print('Error code: ', e.read().decode())
+        logging.info(e.code)
+        logging.info('Error code: ', e.read().decode())
     except URLError as e:
         # do something
-        print('Reason: ', e.reason)                
+        logging.info('Reason: ', e.reason)                
 
 def ubiquity_request(path, data = None, api_version='v2'):
     data = request('https://ubiquity.api.blockdaemon.com/'+api_version+'/'+ path, 
@@ -65,10 +69,8 @@ def ubiquity_request(path, data = None, api_version='v2'):
                     )
     return data
 
-
-
 def get_xpub_wallets(xpub, start = 1, end = 20, wallets = []):
-    print('xpub wallet detected')
+    logging.info('xpub wallet detected')
     key = Xpub.decode(xpub)
     zero_counter = 0
     total_balance = 0
@@ -88,17 +90,17 @@ def get_xpub_wallets(xpub, start = 1, end = 20, wallets = []):
 
             if zero_counter == 10:
                 break
-    print('Total balance:', total_balance/100000000)
+    logging.info('Total balance:', total_balance/100000000)
 
 def get_wallet_info(coin, wallet):
     balance = 0
     if coin == 'nimiq-2':
         data = request('https://api.nimiq.watch/account/'+ wallet.replace(' ','+'))
-        balance = data.get('balance')
+        balance = int(data.get('balance')) / 100000
     else:   
         if 'xpub'in wallet:
            #get_xpub_wallets(wallet)
-           print('xpub not supported')
+           logging.info('xpub not supported')
         else:
             data = {}
             data['addresses'] = [wallet];
@@ -118,7 +120,7 @@ def get_wallet_info(coin, wallet):
 def coins_info(coins=[]):
     enabled_coins =  { key:value for (key,value) in coins.items() if value.get('enabled')}
     coins_string = ','.join(map(str, enabled_coins.keys()))
-    print('Fetching info for', coins_string, 'from CoinGecko')
+    logging.info('Fetching info for {} from CoinGecko'.format(coins_string))
 
     reference_currency = CONFIG.get('currencies')
     price_data = cg.get_price(ids=coins_string, vs_currencies=reference_currency)    
@@ -127,7 +129,7 @@ def coins_info(coins=[]):
         coin_price = price_data.get(coin, None)
         
         if not coin_price:
-            print(coin + ' not found')
+            logging.info(coin + ' not found ')
         else:     
             c = CONFIG.get('coins', {}).get(coin, {})
             display_name = c.get('display_name', coin).capitalize()
@@ -138,11 +140,17 @@ def coins_info(coins=[]):
             for wallet in wallets:
                 if wallet:
                     get_wallet_info(coin, wallet)
+
 if __name__ == '__main__':
-    port = 8000
+    logging.info(40 * '-')
+    logging.info('Crypto Exporter')
+    logging.info(40 * '-')
+   
+    port = CONFIG.get('port')
     start_http_server(port)
-    print('Prometheus exporter running at port ', port)
+    logging.info('Prometheus exporter running at port {}'.format(port))
+    logging.info(40 * '-')
+
     while True:
         coins_info(CONFIG.get('coins', []))
         sleep(60)
-
