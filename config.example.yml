@@ -20,4 +20,8 @@ coins:
   
   ethereum:  
      enabled: true  
-     
+pushgateway:
+  enabled: false
+  address: localhost:9191
+  job: 'crypto-exporter'
+  interval: 60
