@@ -3,7 +3,7 @@ import logging
 import yaml
 import json
 from urllib.error import URLError, HTTPError
-from os import getenv
+import socket
 from prometheus_client import start_http_server, Gauge, REGISTRY, PROCESS_COLLECTOR, PLATFORM_COLLECTOR, GC_COLLECTOR, push_to_gateway, CollectorRegistry 
 from time import sleep
 from pycoingecko import CoinGeckoAPI
@@ -161,5 +161,11 @@ if __name__ == '__main__':
         if(CONFIG.get('pushgateway', []).get('enabled')):
             push_gateway = CONFIG.get('pushgateway')
             logging.info('Pushing to gateway {}'.format(push_gateway.get('host')))
-            push_to_gateway(push_gateway.get('host'), job=push_gateway.get('job'), registry=registry)
+            group = {}
+            group['instance'] = push_gateway.get('instance', socket.gethostname())
+            try:
+                push_to_gateway(push_gateway.get('host'), job=push_gateway.get('job'), grouping_key=group, registry=registry)
+            except URLError:
+              logging.error('Gateway is offline...')
+
         sleep(60)
